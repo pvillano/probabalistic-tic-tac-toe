@@ -35,6 +35,8 @@ def winner(board: board_type) -> str:
                       (board[0][2], board[1][1], board[2][0]))):
         if set(row) in ({x}, {o}):
             return row[0]
+    if blank not in set(chain(*board)):
+        return 'tie'
     return blank
 
 
