@@ -1,7 +1,7 @@
 """
 x goes first
 approx 2 * 3**9 == 39_366 possible states
-terminal states have gain of 1 or 0
+terminal states have gain of 1, 0, or -1
 
 the fitness of a state is ish the sum of the probabilities of the ideal state
 
@@ -41,22 +41,28 @@ def winner(board: board_type) -> str:
 
 
 @cache
-def highest_win_chance(chances,
-                       player_in_control: str = x,
-                       board: board_type = ((blank, blank, blank),
-                                            (blank, blank, blank),
-                                            (blank, blank, blank),)):
+def expected_points(chances,
+                    player_in_control: str = x,
+                    board: board_type = ((blank, blank, blank),
+                                         (blank, blank, blank),
+                                         (blank, blank, blank),)) -> float:
     """
 
     :param chances: chance of success
     :param player_in_control: x or o
     :param board:
-    :return:
+    :return: chance of winning, chance of a tie
     """
-    if (w := winner(board)) != blank:
-        return int(w == player_in_control)
+    w = winner(board)
+    match w:
+        case 'x':
+            return 1 if player_in_control == x else -1
+        case 'o':
+            return 1 if player_in_control == o else -1
+        case 'tie':
+            return 0
 
-    best = 0
+    best = -1
     other_player = x if player_in_control == o else o
     for r, row in enumerate(board):
         for c, val in enumerate(row):
@@ -69,8 +75,8 @@ def highest_win_chance(chances,
             new_board_fail = tuple(tuple(other_player if r == rr and c == cc else board[rr][cc]
                                          for cc in range(3)) for rr in range(3))
 
-            expectation = chance_of_success * (1 - highest_win_chance(chances, other_player, new_board_success))
-            + (1 - chance_of_success) * highest_win_chance(chances, other_player, new_board_fail)
+            expectation = (chance_of_success * - expected_points(chances, other_player, new_board_success)
+                           + (1 - chance_of_success) * (-expected_points(chances, other_player, new_board_fail)))
             best = max(best, expectation)
     return best
 
@@ -79,7 +85,7 @@ def main():
     rand = Random()
     chances = tuple(tuple(rand.randint(0, 20) / 20 for c in range(3)) for r in range(3))
     pprint(chances)
-    print(highest_win_chance(chances))
+    print(expected_points(chances))
 
 
 if __name__ == '__main__':
