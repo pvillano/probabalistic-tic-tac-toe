@@ -1,5 +1,6 @@
 from main import best_score_and_move, ChanceTriple
 
+
 def test_x_win():
     chances = ((ChanceTriple(1, 0, 0),) * 3,) * 3
     board = (('x', 'x', 'x'), (' ', ' ', ' '), (' ', ' ', ' '))

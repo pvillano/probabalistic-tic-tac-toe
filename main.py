@@ -2,51 +2,53 @@ from collections import namedtuple
 from collections.abc import Generator
 from functools import cache
 from itertools import chain
+from pprint import pprint
 from random import Random
-
-from utils.grids import transpose
-from utils.std import pprint
-
-x = 'x'
-o = 'o'
-blank = ' '
 
 ChanceTriple = namedtuple("ChanceTriple", "pos neg meh")
 
 Board = tuple[tuple[str, str, str], tuple[str, str, str], tuple[str, str, str],]
+
 ChanceType = tuple[
     tuple[ChanceTriple, ChanceTriple, ChanceTriple],
     tuple[ChanceTriple, ChanceTriple, ChanceTriple],
     tuple[ChanceTriple, ChanceTriple, ChanceTriple]]
 
 
+def transpose(iterable):
+    iterable = list(iterable)
+    assert len(set(map(len, iterable))) == 1
+    return list(zip(*iterable))
+
+
 def winner(board: Board) -> str:
     for row in chain(board, transpose(board),
                      ((board[0][0], board[1][1], board[2][2]),
                       (board[0][2], board[1][1], board[2][0]))):
-        if set(row) in ({x}, {o}):
+        if set(row) in ({'x'}, {'o'}):
             return row[0]
-    if blank not in set(chain(*board)):
+    if ' ' not in set(chain(*board)):
         return 'tie'
-    return blank
+    return ' '
 
 
 def find_open_cells(board: Board) -> Generator[tuple[int, int]]:
     for r in range(3):
         for c in range(3):
-            if board[r][c] == blank:
+            if board[r][c] == ' ':
                 yield r, c
 
 
 def replace(board: Board, rc: tuple[int, int], player: str) -> Board:
     r, c = rc
-    if board[r][c] != blank:
+    if board[r][c] != ' ':
         raise ValueError("Tried to replace taken cell")
     return tuple(tuple(player if r == rr and c == cc else board[rr][cc]
                        for cc in range(3)) for rr in range(3))
 
+
 @cache
-def best_score_and_move(odds: ChanceType, me: str = x, board: Board = None) -> tuple[float, tuple[int, int] | None]:
+def best_score_and_move(odds: ChanceType, me: str = 'x', board: Board = None) -> tuple[float, tuple[int, int] | None]:
     """
 
     :param odds: chance of success
@@ -55,19 +57,19 @@ def best_score_and_move(odds: ChanceType, me: str = x, board: Board = None) -> t
     :return: chance of winning, chance of a tie
     """
     if board is None:
-        board = ((blank, blank, blank),
-                 (blank, blank, blank),
-                 (blank, blank, blank))
+        board = ((' ', ' ', ' '),
+                 (' ', ' ', ' '),
+                 (' ', ' ', ' '))
     w = winner(board)
     match w:
         case 'x':
-            return (1, None) if me == x else (-1, None)
+            return (1, None) if me == 'x' else (-1, None)
         case 'o':
-            return (1, None) if me == o else (-1, None)
+            return (1, None) if me == 'o' else (-1, None)
         case 'tie':
             return 0, None
 
-    them = x if me == o else o
+    them = 'x' if me == 'o' else 'o'
     open_cells = list(find_open_cells(board))
 
     best_strategy = open_cells[0]

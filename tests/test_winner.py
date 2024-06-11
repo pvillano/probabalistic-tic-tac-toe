@@ -1,4 +1,4 @@
-from main import winner, x, o
+from main import winner
 
 
 def test_undetermined():
@@ -7,17 +7,17 @@ def test_undetermined():
 
 
 def test_tie():
-    board = ((x, o, x),
-             (x, o, o),
-             (o, x, x))
+    board = (('x', 'o', 'x'),
+             ('x', 'o', 'o'),
+             ('o', 'x', 'x'))
     assert winner(board) == 'tie'
 
 
 def test_filled():
-    board = ((x, o, x),
-             (o, x, o),
-             (x, x, o))
-    assert winner(board) == x
+    board = (('x', 'o', 'x'),
+             ('o', 'x', 'o'),
+             ('x', 'x', 'o'))
+    assert winner(board) == 'x'
 
 
 def test_sparse():
