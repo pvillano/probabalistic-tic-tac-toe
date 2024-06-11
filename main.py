@@ -1,11 +1,3 @@
-"""
-x goes first
-approx 2 * 3**9 == 39_366 possible states
-terminal states have gain of 1, 0, or -1
-
-the fitness of a state is ish the sum of the probabilities of the ideal state
-
-"""
 from functools import cache
 from itertools import chain
 from random import Random
@@ -18,15 +10,10 @@ o = 'o'
 blank = ' '
 
 board_type = tuple[tuple[str, str, str], tuple[str, str, str], tuple[str, str, str],]
-chance_type = tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]
-
-
-def wrap(player: str, board: tuple[tuple[str]]) -> int:
-    pass
-
-
-def unwrap(wrapped: int) -> (str, board_type):
-    pass
+chance_type = tuple[
+    tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]],
+    tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]],
+    tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]]
 
 
 def winner(board: board_type) -> str:
@@ -81,9 +68,18 @@ def expected_points(chances,
     return best
 
 
+def random_thirds(r: Random, n=20):
+    bar1 = r.randint(0, n)
+    bar2 = r.randint(0, n)
+    if bar1 > bar2: bar1, bar2 = bar2, bar1
+    arr = [bar1 / n, (bar2 - bar1) / n, (n - bar2) / n]
+    r.shuffle(arr)  # todo: prove this isn't necessary
+    return tuple(arr)
+
+
 def main():
     rand = Random()
-    chances = tuple(tuple(rand.randint(0, 20) / 20 for c in range(3)) for r in range(3))
+    chances = tuple(tuple(random_thirds(rand) for _ in range(3)) for _ in range(3))
     pprint(chances)
     print(expected_points(chances))
 
